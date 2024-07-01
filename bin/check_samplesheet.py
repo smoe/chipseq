@@ -59,21 +59,23 @@ def check_samplesheet(file_in, file_out):
             sys.exit(1)
 
         ## Check sample entries
+        lineNo = 0
         for line in fin:
+            lineNo = lineNo+1
             lspl = [x.strip().strip('"') for x in line.strip().split(",")]
 
             # Check valid number of columns per row
             if len(lspl) < len(HEADER):
                 print_error(
-                    "Invalid number of columns (minimum = {})!".format(len(HEADER)),
-                    "Line",
+                    "Invalid number of columns (found = {}, minimum = {})!".format(len(lspl),len(HEADER)),
+                    "Line {}".format(lineNo),
                     line,
                 )
             num_cols = len([x for x in lspl if x])
             if num_cols < MIN_COLS:
                 print_error(
-                    "Invalid number of populated columns (minimum = {})!".format(MIN_COLS),
-                    "Line",
+                    "Invalid number of populated columns in line {} (found = {}, minimum = {})!".format(lineNo,num_cols,MIN_COLS),
+                    "Line {}".format(lineNo),
                     line,
                 )
 
@@ -93,7 +95,7 @@ def check_samplesheet(file_in, file_out):
                     if not fastq.endswith(".fastq.gz") and not fastq.endswith(".fq.gz"):
                         print_error(
                             "FastQ file does not have extension '.fastq.gz' or '.fq.gz'!",
-                            "Line",
+                            "Line {}".format(lineNo),
                             line,
                         )
 
@@ -105,7 +107,7 @@ def check_samplesheet(file_in, file_out):
                 if not control:
                     print_error(
                         "Both antibody and control columns must be specified!",
-                        "Line",
+                        "Line {}".format(lineNo),
                         line,
                     )
             if control:
@@ -115,7 +117,7 @@ def check_samplesheet(file_in, file_out):
                 if not antibody:
                     print_error(
                         "Both antibody and control columns must be specified!",
-                        "Line",
+                        "Line {}".format(lineNo),
                         line,
                     )
 
@@ -126,14 +128,14 @@ def check_samplesheet(file_in, file_out):
             elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
                 sample_info = ["1", fastq_1, fastq_2, antibody, control]
             else:
-                print_error("Invalid combination of columns provided!", "Line", line)
+                print_error("Invalid combination of columns provided!", "Line {}".format(lineNo), line)
 
             ## Create sample mapping dictionary = {sample: [[ single_end, fastq_1, fastq_2, antibody, control ]]}
             if sample not in sample_mapping_dict:
                 sample_mapping_dict[sample] = [sample_info]
             else:
                 if sample_info in sample_mapping_dict[sample]:
-                    print_error("Samplesheet contains duplicate rows!", "Line", line)
+                    print_error("Samplesheet contains duplicate rows!", "Line {}".format(lineNo), line)
                 else:
                     sample_mapping_dict[sample].append(sample_info)
 
